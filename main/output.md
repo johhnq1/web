@@ -10,7 +10,7 @@ Useful Links & Sources
 
     (website of the object of interest)
     Europagymnasium Kerpen - Official Website
-    (https://www.gymnasiumkerpen.eu/)
+    <https://www.gymnasiumkerpen.eu/>
 
         Europagymnasium Kerpen - Focus on sustainability
         https://www.gymnasiumkerpen.eu/aktuelles/europagymnasium-kerpen-setzt-auf-nachhaltigkeit-in-der-europawoche-2024

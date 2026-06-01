@@ -69,7 +69,7 @@
                     // Skip the index.html itself so it doesn't loop link to itself
                     if (item.name === 'index.html') return;
 
-                    if (item.type === 'dir') {
+                    if (item.type === 'dir' && item.name != "_") {
                         // Directory link updates the hash fragment (triggers re-load)
                         addListItem('📁', item.name, `#${item.path}`);
                     } else {

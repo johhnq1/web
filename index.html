@@ -1,6 +1,114 @@
 <!DOCTYPE html>
-<html>
-  <body>
-    <h1>Welcome!</h1>
-  </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome!</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; max-width: 800px; margin: 0 auto; }
+        h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .path-nav { font-weight: bold; margin-bottom: 20px; color: #555; }
+        ul { list-style-type: none; padding-left: 0; }
+        li { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; }
+        li:hover { background-color: #fafafa; }
+        a { color: #0969da; text-decoration: none; font-weight: 500; }
+        a:hover { text-decoration: underline; }
+        .icon { margin-right: 10px; font-size: 1.2em; }
+        .error { color: #cf222e; background: #ffebe9; padding: 15px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <h1> Welcome </h1>
+    <hr>
+    <h2 id="repo-title">Nav Index</h2>
+    <div class="path-nav" id="current-path">Loading directory...</div>
+    
+    <ul id="file-list"></ul>
+    <div id="error-message" class="error" style="display:none;"></div>
+
+    <script>
+        // CONFIGURATION: Replace these with your exact details
+        const GITHUB_USER = 'johhnq1';
+        const GITHUB_REPO = 'johhnq1.github.io'; // e.g., 'username.github.io'
+        const BRANCH = 'main'; // Change to 'master' if your default branch is older
+
+        // Automatically determine what sub-folder the user is trying to look at
+        // It reads everything after the "#" in the URL (e.g., ://mysite.com)
+        async function loadDirectory() {
+            const fileListEl = document.getElementById('file-list');
+            const pathNavEl = document.getElementById('current-path');
+            const errorEl = document.getElementById('error-message');
+            
+            fileListEl.innerHTML = '';
+            errorEl.style.display = 'none';
+            
+            // Get path from URL hash fragment
+            const currentSubFolder = window.location.hash.replace('#', '').replace(/^\/|\/$/g, '');
+            pathNavEl.textContent = `Current Path: /${currentSubFolder}`;
+
+            // Build GitHub API tree endpoint URL
+            const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${currentSubFolder}?ref=${BRANCH}`;
+            
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error(`Failed to load directory content (Status: ${response.status})`);
+                
+                const items = await response.json();
+                
+                // Add a "Go Back" item if we are inside a sub-directory
+                if (currentSubFolder) {
+                    const parentPath = currentSubFolder.substring(0, currentSubFolder.lastIndexOf('/'));
+                    addListItem('📁', '.. (Go Back Up)', parentPath ? `#${parentPath}` : '#');
+                }
+
+                // Sort items so folders appear first, then files
+                items.sort((a, b) => (b.type === 'dir') - (a.type === 'dir'));
+
+                items.forEach(item => {
+                    // Skip the index.html itself so it doesn't loop link to itself
+                    if (item.name === 'index.html') return;
+
+                    if (item.type === 'dir') {
+                        // Directory link updates the hash fragment (triggers re-load)
+                        addListItem('📁', item.name, `#${item.path}`);
+                    } else {
+                        // File link maps straight to the correct GitHub Pages raw URL asset
+                        const siteUrl = `https://${GITHUB_USER}.github.io/${GITHUB_REPO}/${item.path}`.replace(/\/+/g, '/').replace('https:/', 'https://');
+                        addListItem('📄', item.name, siteUrl, true);
+                    }
+                });
+                
+                if(items.length === 0 || (items.length === 1 && items[0].name === 'index.html')) {
+                    fileListEl.innerHTML = '<li>Empty directory</li>';
+                }
+
+            } catch (err) {
+                errorEl.textContent = `Error: ${err.message}. Make sure your config settings match your repo names.`;
+                errorEl.style.display = 'block';
+                pathNavEl.textContent = 'Failed to load.';
+            }
+        }
+
+        function addListItem(icon, name, url, isExternal = false) {
+            const ul = document.getElementById('file-list');
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            
+            a.href = url;
+            if (isExternal) a.target = '_blank'; // Open files in new tabs
+            
+            a.innerHTML = `<span class="icon">${icon}</span>${name}`;
+            li.appendChild(a);
+            ul.appendChild(li);
+        }
+
+        // Listen for back/forward button clicks or hash modifications to change folders dynamically
+        window.addEventListener('hashchange', loadDirectory);
+        
+        // Initialize on launch
+        document.getElementById('repo-title').textContent = `${GITHUB_REPO} File Index`;
+        loadDirectory();
+    </script>
+</body>
 </html>

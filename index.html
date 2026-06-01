@@ -65,19 +65,23 @@
                 // Sort items so folders appear first, then files
                 items.sort((a, b) => (b.type === 'dir') - (a.type === 'dir'));
 
+                // Define an array of names you want to completely hide from the list
+                const ignoredNames = ['_', '.git', '.github'];
+                
                 items.forEach(item => {
-                    // Skip the index.html itself so it doesn't loop link to itself
-                    if (item.name === 'index.html') return;
-
-                    if (item.type === 'dir' && item.name != "_") {
+                    // 2. Skip the item if its name is in our ignore list
+                    if (ignoredNames.includes(item.name)) return;
+                
+                    if (item.type === 'dir') {
                         // Directory link updates the hash fragment (triggers re-load)
                         addListItem('📁', item.name, `#${item.path}`);
                     } else {
                         // File link maps straight to the correct GitHub Pages raw URL asset
-                        const siteUrl = `https://${GITHUB_USER}.github.io/${item.path}`.replace(/\/+/g, '/').replace('https:/', 'https://');
+                        const siteUrl = `https://${GITHUB_USER}.github.io/${GITHUB_REPO}/${item.path}`.replace(/\/+/g, '/').replace('https:/', 'https://');
                         addListItem('📄', item.name, siteUrl, true);
                     }
                 });
+
                 
                 if(items.length === 0 || (items.length === 1 && items[0].name === 'index.html')) {
                     fileListEl.innerHTML = '<li>Empty directory</li>';

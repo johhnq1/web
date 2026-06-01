@@ -74,7 +74,7 @@
                         addListItem('📁', item.name, `#${item.path}`);
                     } else {
                         // File link maps straight to the correct GitHub Pages raw URL asset
-                        const siteUrl = `https://${GITHUB_USER}.github.io/${GITHUB_REPO}/${item.path}`.replace(/\/+/g, '/').replace('https:/', 'https://');
+                        const siteUrl = `https://${GITHUB_USER}.github.io/${item.path}`.replace(/\/+/g, '/').replace('https:/', 'https://');
                         addListItem('📄', item.name, siteUrl, true);
                     }
                 });
